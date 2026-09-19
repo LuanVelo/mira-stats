@@ -1,0 +1,454 @@
+<title>Ficha tática de LM</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;800;900&family=Barlow+Semi+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --ink:#0b0d0c; --panel:#141815; --panel2:#191e1a; --line:#262c28; --line2:#343b36;
+    --bone:#e9e4d6; --muted:#8a9186; --t:#e3a13b; --ct:#5ea6d6; --win:#8cc96f; --loss:#e0604a;
+    --display:"Big Shoulders","Arial Narrow",sans-serif;
+    --body:"Barlow Semi Condensed",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--ink); color:var(--bone); font-family:var(--body); font-size:16px; line-height:1.5;
+    background-image:
+      radial-gradient(900px 500px at -10% -10%, rgba(227,161,59,.10), transparent 60%),
+      radial-gradient(700px 400px at 110% 0%, rgba(94,166,214,.08), transparent 60%),
+      linear-gradient(rgba(255,255,255,.016) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px);
+    background-size:auto,auto,30px 30px,30px 30px; background-attachment:fixed;
+  }
+  .wrap { max-width:1100px; margin:0 auto; padding-inline:16px; padding-block:28px 64px; }
+  h1 { font-family:var(--display); font-size:clamp(3rem,10vw,5.5rem); font-weight:900; text-transform:uppercase;
+       letter-spacing:.02em; line-height:.85; margin:.1em 0 0; text-wrap:balance; }
+  h2 { font-family:var(--display); font-size:1.4rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em;
+       margin:44px 0 12px; padding-bottom:6px; border-bottom:1px solid var(--line); display:flex; align-items:end; gap:12px; }
+  h2 .aside { margin-left:auto; font:600 .7rem/1 var(--display); letter-spacing:.14em; color:var(--muted); }
+  .lbl, .chip { font-family:var(--display); text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; font-weight:600; color:var(--muted); }
+  .num { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .muted { color:var(--muted); }
+  .good { color:var(--win); } .bad { color:var(--loss); } .mid { color:var(--bone); }
+  .win { color:var(--win); } .loss { color:var(--loss); }
+  header.top { display:flex; flex-wrap:wrap; align-items:center; gap:20px; border-bottom:1px solid var(--line); padding-bottom:22px; }
+  .crosshair { width:44px; height:44px; color:var(--t); flex:none; }
+  .premier { margin-left:auto; text-align:right; }
+  .premier b { display:block; font-family:var(--mono); font-size:2.6rem; font-weight:600; color:var(--t); }
+  .grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); }
+  .two { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+  .card, .panel { background:linear-gradient(180deg,var(--panel2),var(--panel)); border:1px solid var(--line); }
+  .card { padding:12px 14px; }
+  .card header { display:flex; align-items:center; gap:8px; }
+  .card .big { font-family:var(--mono); font-size:2.1rem; font-weight:600; margin:.15em 0 0; }
+  .card .sub { margin:2px 0 0; font-size:.82rem; color:var(--muted); }
+  .chip { margin-left:auto; font-size:.68rem; }
+  .chip.good { color:var(--win); } .chip.bad { color:var(--loss); } .chip.mid { color:var(--muted); }
+  .bar { height:4px; background:var(--line); margin-top:8px; }
+  .bar i { display:block; height:100%; background:var(--line2); }
+  .bar i.good { background:var(--win); } .bar i.bad { background:var(--loss); }
+  ul.diag { list-style:none; margin:0; padding:12px 14px; display:grid; gap:14px; }
+  ul.diag .row { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  ul.diag .name { font-weight:600; font-size:1rem; letter-spacing:0; text-transform:none; font-family:var(--body); color:var(--bone); }
+  .push { margin-left:auto; }
+  .panel.pad { padding:14px; }
+  table { width:100%; border-collapse:collapse; font-size:.95rem; }
+  th { font:600 .68rem/1.6 var(--display); text-transform:uppercase; letter-spacing:.12em; color:var(--muted); text-align:right; padding:8px 10px; white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; }
+  td { padding:7px 10px; text-align:right; border-top:1px solid var(--line); }
+  td.name { font-family:var(--display); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .scroll { overflow-x:auto; }
+  .tape { display:flex; height:30px; border:1px solid var(--line); }
+  .tape span { display:grid; place-items:center; font:600 .72rem/1 var(--mono); color:var(--ink); }
+  .tape .t { background:var(--t); } .tape .ct { background:var(--ct); } .tape .win { background:var(--win); }
+  .tape .line { background:var(--line2); color:var(--bone); } .tape .loss { background:var(--loss); }
+  .legend { display:flex; flex-wrap:wrap; gap:14px; margin-top:10px; font-size:.85rem; color:var(--muted); }
+  .legend i { display:inline-block; width:9px; height:9px; margin-right:5px; }
+  .prem { display:flex; gap:8px; align-items:flex-end; overflow-x:auto; padding-bottom:4px; }
+  .prem div { flex:none; width:60px; text-align:center; }
+  .prem b { display:block; font:600 .72rem/1.6 var(--mono); }
+  .prem i { display:block; margin:0 auto; width:100%; }
+  .prem small { color:var(--muted); font-size:.72rem; }
+  .duel { display:flex; align-items:baseline; gap:12px; }
+  .duel .big { font-family:var(--mono); font-size:3.4rem; font-weight:600; }
+  .split { display:flex; height:8px; margin-top:12px; }
+  .tip { position:relative; cursor:help; border-bottom:1px dotted var(--line2); outline:none; }
+  .tip .bubble {
+    position:absolute; left:0; top:calc(100% + 7px); width:min(19rem,72vw); z-index:50;
+    background:var(--panel2); border:1px solid var(--line2); color:var(--bone); padding:9px 11px;
+    font:400 .78rem/1.5 var(--body); letter-spacing:0; text-transform:none; text-align:left;
+    box-shadow:0 10px 28px rgba(0,0,0,.65); opacity:0; visibility:hidden; transition:opacity .12s;
+  }
+  .tip:hover .bubble, .tip:focus .bubble { opacity:1; visibility:visible; }
+  footer { margin-top:52px; border-top:1px solid var(--line); padding-top:16px; color:var(--muted); font-size:.85rem; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <svg class="crosshair" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+      <path d="M12 2v6M12 16v6M2 12h6M16 12h6" stroke-linecap="square"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/>
+    </svg>
+    <div>
+      <span class="lbl">Ficha tática · Premier · 15/09/2026 – 16/09/2026</span>
+      <h1>LM</h1>
+      <span class="muted num">9 partidas · 183 rounds · 2029 tiros</span>
+    </div>
+    <div class="premier">
+      <span class="tip lbl" tabindex="0">Premier<span class="bubble" role="tooltip">Seu CS Rating do Premier, lido direto da demo no fim de cada partida.</span></span>
+      <b>4,858</b>
+    </div>
+  </header>
+
+  <h2>Diagnóstico <span class="aside">percentil contra 45 adversários do mesmo ranque</span></h2>
+  <div class="two">
+    <div class="panel"><div class="lbl" style="padding:12px 14px 0;color:var(--win)">Pontos fortes</div>
+      <ul class="diag"><li>
+          <div class="row"><span class="tip name" tabindex="0">Inimigos cegados<span class="bubble" role="tooltip">Inimigos cegados por round, contando só cegueiras acima de 1,1 segundo, que é o tempo em que a flash realmente atrapalha.</span></span><b class="num">0.36</b>
+          <span class="muted num">grupo 0.13</span><span class="chip good push">p89</span></div>
+          <div class="bar"><i class="good" style="width:89%"></i></div>
+        </li><li>
+          <div class="row"><span class="tip name" tabindex="0">Mortes sem trade<span class="bubble" role="tooltip">Das suas mortes, quantas o time não conseguiu vingar em até 5 segundos. É o pior tipo de morte: seu time fica em desvantagem numérica. Costuma indicar que você está longe demais dos aliados.</span></span><b class="num">83%</b>
+          <span class="muted num">grupo 85%</span><span class="chip mid push">p58</span></div>
+          <div class="bar"><i class="mid" style="width:58%"></i></div>
+        </li></ul></div>
+    <div class="panel"><div class="lbl" style="padding:12px 14px 0;color:var(--loss)">A melhorar</div>
+      <ul class="diag"><li>
+          <div class="row"><span class="tip name" tabindex="0">Counter-strafe<span class="bubble" role="tooltip">Tiros de rifle dados praticamente parado (velocidade abaixo de 34% da máxima da arma), que é quando a arma tem precisão. Atirar correndo joga o tiro fora.</span></span><b class="num">68%</b>
+          <span class="muted num">grupo 81%</span><span class="chip bad push">p11</span></div>
+          <div class="bar"><i class="bad" style="width:11%"></i></div>
+        </li><li>
+          <div class="row"><span class="tip name" tabindex="0">Duelos de abertura<span class="bubble" role="tooltip">Das primeiras mortes do round em que você se envolveu, quantas você venceu. É a estatística de maior peso: quem abre o round decide o resto. 50% é equilíbrio, 55% já é acima da média e 60% é nível de elite.</span></span><b class="num">27%</b>
+          <span class="muted num">grupo 50%</span><span class="chip bad push">p16</span></div>
+          <div class="bar"><i class="bad" style="width:16%"></i></div>
+        </li><li>
+          <div class="row"><span class="tip name" tabindex="0">Spray<span class="bubble" role="tooltip">Acertos em rajadas de 3 tiros ou mais com rifle e inimigo visível. Mede controle de recuo.</span></span><b class="num">22%</b>
+          <span class="muted num">grupo 27%</span><span class="chip bad push">p18</span></div>
+          <div class="bar"><i class="bad" style="width:18%"></i></div>
+        </li></ul></div>
+  </div>
+
+  <h2>Números</h2>
+  <div class="grid">
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">Rating<span class="bubble" role="tooltip">Rating 2.0 aproximado: junta kills, mortes, dano e KAST num número só. 1,00 é o desempenho médio. O HLTV 3.0 de hoje usa probabilidade de vitória do round e não é replicável, então isto é uma aproximação da fórmula 2.0.</span></span><span class="chip bad"><span class="tip " tabindex="0">p20<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big bad">0.74</p>
+      <p class="sub">1.0: 0.68</p>
+      <div class="bar"><i class="bad" style="width:20%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">ADR<span class="bubble" role="tooltip">Dano médio por round em inimigos. O dano é limitado ao HP que a vítima ainda tinha, então um tiro de AWP em quem está com 20 de vida conta 20.</span></span><span class="chip bad"><span class="tip " tabindex="0">p22<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big bad">61</p>
+      <p class="sub">0.51 kills/round</p>
+      <div class="bar"><i class="bad" style="width:22%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">KAST<span class="bubble" role="tooltip">Porcentagem de rounds em que você fez algo: matou, deu assistência, sobreviveu ou morreu sendo vingado (tradado). É a medida mais limpa de &quot;participei do round&quot;.</span></span><span class="chip bad"><span class="tip " tabindex="0">p22<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big bad">62%</p>
+      
+      <div class="bar"><i class="bad" style="width:22%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">HS%<span class="bubble" role="tooltip">Das suas kills, quantas foram na cabeça. Mede precisão, não eficácia: HS% alto com poucas kills não ajuda o time.</span></span><span class="chip mid"><span class="tip " tabindex="0">p53<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big mid">38%</p>
+      <p class="sub">K/D 0.64</p>
+      <div class="bar"><i class="mid" style="width:53%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">Vitórias<span class="bubble" role="tooltip">Porcentagem de partidas vencidas.</span></span></header>
+      <p class="big mid">33%</p>
+      <p class="sub">3V 6D</p>
+      
+    </article>
+    <article class="card"><header><span class="tip lbl" tabindex="0">Clutches<span class="bubble" role="tooltip">Rounds em que você ficou por último contra um ou mais inimigos, e quantos desses o time venceu.</span></span></header>
+      <p class="big mid">3/23</p>
+      <p class="sub">ganhos / situações 1vX</p></article>
+  </div>
+
+  <h2>Mira <span class="aside">358 duelos medidos tick a tick</span></h2>
+  <div class="grid">
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">Precisão<span class="bubble" role="tooltip">Dos tiros que você deu COM um inimigo visível, quantos acertaram alguém. Só conta tiro com inimigo à vista, então spray em fumaça ou parede não estraga o número.</span></span><span class="chip mid"><span class="tip " tabindex="0">p31<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big mid">24%</p>
+      
+      <div class="bar"><i class="mid" style="width:31%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">HS accuracy<span class="bubble" role="tooltip">Dos seus acertos, quantos foram na cabeça. Diferente do HS%, que olha só as kills: aqui entra todo tiro que acertou. AWP fica de fora.</span></span><span class="chip mid"><span class="tip " tabindex="0">p36<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big mid">10%</p>
+      
+      <div class="bar"><i class="mid" style="width:36%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">Spray<span class="bubble" role="tooltip">Acertos em rajadas de 3 tiros ou mais com rifle e inimigo visível. Mede controle de recuo.</span></span><span class="chip bad"><span class="tip " tabindex="0">p18<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big bad">22%</p>
+      
+      <div class="bar"><i class="bad" style="width:18%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">Counter-strafe<span class="bubble" role="tooltip">Tiros de rifle dados praticamente parado (velocidade abaixo de 34% da máxima da arma), que é quando a arma tem precisão. Atirar correndo joga o tiro fora.</span></span><span class="chip bad"><span class="tip " tabindex="0">p11<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big bad">68%</p>
+      
+      <div class="bar"><i class="bad" style="width:11%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">Tempo até o dano<span class="bubble" role="tooltip">Tempo mediano entre o inimigo aparecer na sua tela e você causar o primeiro dano nele. Junta reação e decisão: quanto menor, mais rápido você resolve o duelo.</span></span><span class="chip mid"><span class="tip " tabindex="0">p33<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big mid">446 ms</p>
+      
+      <div class="bar"><i class="mid" style="width:33%"></i></div>
+    </article>
+    <article class="card">
+      <header><span class="tip lbl" tabindex="0">Colocação de mira<span class="bubble" role="tooltip">Ângulo mediano entre onde sua mira estava e onde o inimigo apareceu. Quanto menor, menos você precisa corrigir — é o que separa quem ganha duelo de quem chega atrasado.</span></span><span class="chip mid"><span class="tip " tabindex="0">p44<span class="bubble" role="tooltip">Posição entre os 45 adversários das partidas: 50 é a média do grupo.</span></span></span></header>
+      <p class="big mid">3.43°</p>
+      
+      <div class="bar"><i class="mid" style="width:44%"></i></div>
+    </article>
+  </div>
+
+  <h2>Duelos de abertura</h2>
+  <div class="two">
+    <div class="panel pad">
+      <div class="duel">
+        <span class="big bad">27%</span>
+        <span class="num muted">8V · 22D</span>
+      </div>
+      <div class="split">
+        <i style="width:27%;background:var(--win)"></i>
+        <i style="flex:1;background:var(--loss)"></i>
+      </div>
+      <p class="sub muted" style="margin-top:12px">Entra na primeira morte de <span class="num">16%</span>
+      dos rounds. 50% de vitória é equilíbrio; 55% já é acima da média.</p>
+    </div>
+    <div class="panel"><div class="scroll"><table><tr><th>Lado</th>
+      <th><span class="tip lbl" tabindex="0">Rounds<span class="bubble" role="tooltip">Total de rounds jogados no período. Toda métrica precisa de amostra: abaixo de ~100 rounds, trate os números como indício.</span></span></th><th>Ganhos</th>
+      <th><span class="tip lbl" tabindex="0">ADR<span class="bubble" role="tooltip">Dano médio por round em inimigos. O dano é limitado ao HP que a vítima ainda tinha, então um tiro de AWP em quem está com 20 de vida conta 20.</span></span></th><th><span class="tip lbl" tabindex="0">KAST<span class="bubble" role="tooltip">Porcentagem de rounds em que você fez algo: matou, deu assistência, sobreviveu ou morreu sendo vingado (tradado). É a medida mais limpa de &quot;participei do round&quot;.</span></span></th>
+      <th><span class="tip lbl" tabindex="0">Duelos de abertura<span class="bubble" role="tooltip">Das primeiras mortes do round em que você se envolveu, quantas você venceu. É a estatística de maior peso: quem abre o round decide o resto. 50% é equilíbrio, 55% já é acima da média e 60% é nível de elite.</span></span></th></tr><tr><td class="name">TR</td>
+          <td class="num muted">97</td>
+          <td class="num">43%</td>
+          <td class="num">51</td>
+          <td class="num">58%</td>
+          <td class="num">3-12</td></tr><tr><td class="name">CT</td>
+          <td class="num muted">86</td>
+          <td class="num">40%</td>
+          <td class="num">72</td>
+          <td class="num">67%</td>
+          <td class="num">5-10</td></tr></table></div></div>
+  </div>
+
+  <h2>Presença no round <span class="aside">KAST 62%</span></h2>
+  <div class="panel pad">
+    <div class="tape">
+      <span class="t" style="width:37.7%" title="Rounds em que você matou alguém.">69</span><span class="ct" style="width:13.7%" title="Rounds sem kill, mas com assistência.">25</span><span class="win" style="width:5.5%" title="Rounds sem kill nem assistência em que sobreviveu."></span><span class="line" style="width:5.5%" title="Rounds em que morreu, mas o time vingou em até 5 s."></span><span class="loss" style="width:37.7%" title="Sem kill, sem assistência, morreu e ninguém vingou.">69</span>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--t)"></i>kill 69</span><span><i style="background:var(--ct)"></i>assist 25</span><span><i style="background:var(--win)"></i>sobreviveu 10</span><span><i style="background:var(--line2)"></i>tradado 10</span><span><i style="background:var(--loss)"></i>em branco 69</span>
+    </div>
+  </div>
+
+  <h2>Rating por partida <span class="aside">tracejado = média de 5</span></h2>
+  <div class="panel pad">
+    <svg viewBox="0 0 720 170" style="width:100%;height:auto" role="img" aria-label="Rating por partida">
+      <line x1="26" y1="59.1" x2="694" y2="59.1" stroke="#8a9186" stroke-dasharray="3 5" stroke-width="1"/>
+      <text x="696" y="63.1" fill="#8a9186" font-family="JetBrains Mono, monospace" font-size="11" text-anchor="end">1.00</text>
+      <polyline points="26.0,55.7 109.5,79.5 193.0,71.8 276.5,90.5 360.0,88.0 443.5,26.0 527.0,95.6 610.5,105.8 694.0,119.4" fill="none" stroke="#e3a13b" stroke-width="2"/>
+      <polyline points="26.0,55.7 109.5,67.6 193.0,69.0 276.5,74.4 360.0,77.1 443.5,71.2 527.0,74.4 610.5,81.2 694.0,87.0" fill="none" stroke="#e9e4d6" stroke-width="1.5" stroke-dasharray="5 4" opacity=".8"/>
+      <circle cx="26.0" cy="55.7" r="3.5" fill="#8cc96f"><title>Dust2 · 15/09 19:24 · rating 1.04</title></circle><circle cx="109.5" cy="79.5" r="3.5" fill="#e0604a"><title>Mirage · 15/09 20:09 · rating 0.76</title></circle><circle cx="193.0" cy="71.8" r="3.5" fill="#e0604a"><title>Nuke · 15/09 22:38 · rating 0.85</title></circle><circle cx="276.5" cy="90.5" r="3.5" fill="#e0604a"><title>Dust2 · 16/09 17:27 · rating 0.63</title></circle><circle cx="360.0" cy="88.0" r="3.5" fill="#e0604a"><title>Mirage · 16/09 17:54 · rating 0.66</title></circle><circle cx="443.5" cy="26.0" r="3.5" fill="#8cc96f"><title>Dust2 · 16/09 18:23 · rating 1.39</title></circle><circle cx="527.0" cy="95.6" r="3.5" fill="#e0604a"><title>Mirage · 16/09 18:54 · rating 0.57</title></circle><circle cx="610.5" cy="105.8" r="3.5" fill="#8cc96f"><title>Mirage · 16/09 22:57 · rating 0.45</title></circle><circle cx="694.0" cy="119.4" r="3.5" fill="#e0604a"><title>Mirage · 16/09 23:47 · rating 0.29</title></circle>
+    </svg>
+    <p class="sub muted">Verde = vitória, vermelho = derrota. Passe o mouse num ponto para ver a partida.</p>
+  </div>
+
+  <h2>Premier <span class="aside">-58 no período</span></h2>
+  <div class="panel pad">
+    <div class="prem">
+      <div><b class="loss">-107</b>
+        <i style="height:23px;background:var(--loss)"
+           title="Mirage · 15/09 20:09 · 4,809"></i>
+        <small>Mirag</small></div><div><b class="loss">-117</b>
+        <i style="height:25px;background:var(--loss)"
+           title="Nuke · 15/09 22:38 · 4,692"></i>
+        <small>Nuke</small></div><div><b class="loss">-114</b>
+        <i style="height:24px;background:var(--loss)"
+           title="Dust2 · 16/09 17:27 · 4,578"></i>
+        <small>Dust2</small></div><div><b class="loss">-109</b>
+        <i style="height:24px;background:var(--loss)"
+           title="Mirage · 16/09 17:54 · 4,469"></i>
+        <small>Mirag</small></div><div><b class="win">+361</b>
+        <i style="height:60px;background:var(--win)"
+           title="Dust2 · 16/09 18:23 · 4,830"></i>
+        <small>Dust2</small></div><div><b class="loss">-105</b>
+        <i style="height:23px;background:var(--loss)"
+           title="Mirage · 16/09 18:54 · 4,725"></i>
+        <small>Mirag</small></div><div><b class="win">+274</b>
+        <i style="height:47px;background:var(--win)"
+           title="Mirage · 16/09 22:57 · 4,999"></i>
+        <small>Mirag</small></div><div><b class="loss">-141</b>
+        <i style="height:28px;background:var(--loss)"
+           title="Mirage · 16/09 23:47 · 4,858"></i>
+        <small>Mirag</small></div>
+    </div>
+    <p class="sub muted" style="margin-top:10px">CS Rating ganho e perdido por partida, lido da própria demo.</p>
+  </div>
+
+  <h2>Contexto</h2>
+  <div class="two">
+    <div class="panel"><div class="scroll"><table><tr><th>Mapa</th>
+      <th><span class="tip lbl" tabindex="0">Rounds<span class="bubble" role="tooltip">Total de rounds jogados no período. Toda métrica precisa de amostra: abaixo de ~100 rounds, trate os números como indício.</span></span></th><th>Ganhos</th>
+      <th><span class="tip lbl" tabindex="0">ADR<span class="bubble" role="tooltip">Dano médio por round em inimigos. O dano é limitado ao HP que a vítima ainda tinha, então um tiro de AWP em quem está com 20 de vida conta 20.</span></span></th><th><span class="tip lbl" tabindex="0">KAST<span class="bubble" role="tooltip">Porcentagem de rounds em que você fez algo: matou, deu assistência, sobreviveu ou morreu sendo vingado (tradado). É a medida mais limpa de &quot;participei do round&quot;.</span></span></th>
+      <th><span class="tip lbl" tabindex="0">Duelos de abertura<span class="bubble" role="tooltip">Das primeiras mortes do round em que você se envolveu, quantas você venceu. É a estatística de maior peso: quem abre o round decide o resto. 50% é equilíbrio, 55% já é acima da média e 60% é nível de elite.</span></span></th></tr><tr><td class="name">Mirage</td>
+          <td class="num muted">104</td>
+          <td class="num">37%</td>
+          <td class="num">53</td>
+          <td class="num">57%</td>
+          <td class="num">3-10</td></tr><tr><td class="name">Dust2</td>
+          <td class="num muted">56</td>
+          <td class="num">50%</td>
+          <td class="num">78</td>
+          <td class="num">75%</td>
+          <td class="num">4-9</td></tr><tr><td class="name">Nuke</td>
+          <td class="num muted">23</td>
+          <td class="num">43%</td>
+          <td class="num">57</td>
+          <td class="num">57%</td>
+          <td class="num">1-3</td></tr></table></div></div>
+    <div class="panel"><div class="scroll"><table><tr><th>Compra</th>
+      <th><span class="tip lbl" tabindex="0">Rounds<span class="bubble" role="tooltip">Total de rounds jogados no período. Toda métrica precisa de amostra: abaixo de ~100 rounds, trate os números como indício.</span></span></th><th>Ganhos</th>
+      <th><span class="tip lbl" tabindex="0">ADR<span class="bubble" role="tooltip">Dano médio por round em inimigos. O dano é limitado ao HP que a vítima ainda tinha, então um tiro de AWP em quem está com 20 de vida conta 20.</span></span></th><th><span class="tip lbl" tabindex="0">KAST<span class="bubble" role="tooltip">Porcentagem de rounds em que você fez algo: matou, deu assistência, sobreviveu ou morreu sendo vingado (tradado). É a medida mais limpa de &quot;participei do round&quot;.</span></span></th>
+      <th><span class="tip lbl" tabindex="0">Duelos de abertura<span class="bubble" role="tooltip">Das primeiras mortes do round em que você se envolveu, quantas você venceu. É a estatística de maior peso: quem abre o round decide o resto. 50% é equilíbrio, 55% já é acima da média e 60% é nível de elite.</span></span></th></tr><tr><td class="name">Full</td>
+          <td class="num muted">87</td>
+          <td class="num">48%</td>
+          <td class="num">67</td>
+          <td class="num">59%</td>
+          <td class="num">4-10</td></tr><tr><td class="name">Semi-buy</td>
+          <td class="num muted">64</td>
+          <td class="num">34%</td>
+          <td class="num">49</td>
+          <td class="num">64%</td>
+          <td class="num">4-5</td></tr><tr><td class="name">Pistol</td>
+          <td class="num muted">18</td>
+          <td class="num">56%</td>
+          <td class="num">80</td>
+          <td class="num">89%</td>
+          <td class="num">0-4</td></tr><tr><td class="name">Semi-eco</td>
+          <td class="num muted">12</td>
+          <td class="num">17%</td>
+          <td class="num">51</td>
+          <td class="num">42%</td>
+          <td class="num">0-3</td></tr><tr><td class="name">Eco</td>
+          <td class="num muted">2</td>
+          <td class="num">0%</td>
+          <td class="num">78</td>
+          <td class="num">50%</td>
+          <td class="num">—</td></tr></table></div></div>
+  </div>
+
+  <h2>Armas</h2>
+  <div class="two">
+    <div class="panel scroll">
+      <table>
+        <tr><th>Arma</th><th><span class="tip lbl" tabindex="0">Kills<span class="bubble" role="tooltip">Inimigos eliminados. Team kills e suicídios contam à parte.</span></span></th><th><span class="tip lbl" tabindex="0">HS%<span class="bubble" role="tooltip">Das suas kills, quantas foram na cabeça. Mede precisão, não eficácia: HS% alto com poucas kills não ajuda o time.</span></span></th><th>Morreu para</th></tr>
+        <tr><td class="name">m4a1_silencer</td>
+      <td class="num">33</td>
+      <td class="num">30%</td>
+      <td class="num muted">28</td></tr><tr><td class="name">ak47</td>
+      <td class="num">26</td>
+      <td class="num">46%</td>
+      <td class="num muted">43</td></tr><tr><td class="name">usp_silencer</td>
+      <td class="num">13</td>
+      <td class="num">46%</td>
+      <td class="num muted">9</td></tr><tr><td class="name">glock</td>
+      <td class="num">7</td>
+      <td class="num">29%</td>
+      <td class="num muted">6</td></tr><tr><td class="name">famas</td>
+      <td class="num">3</td>
+      <td class="num">33%</td>
+      <td class="num muted">1</td></tr><tr><td class="name">m4a1</td>
+      <td class="num">3</td>
+      <td class="num">67%</td>
+      <td class="num muted">9</td></tr><tr><td class="name">mp5sd</td>
+      <td class="num">3</td>
+      <td class="num">33%</td>
+      <td class="num muted">1</td></tr><tr><td class="name">sg556</td>
+      <td class="num">2</td>
+      <td class="num">50%</td>
+      <td class="num muted">0</td></tr>
+      </table>
+    </div>
+    <div class="panel scroll">
+      <table>
+        <tr><th>Partida</th><th>Data</th><th>Placar</th><th>K-D</th><th>Rounds</th><th><span class="tip lbl" tabindex="0">Rating<span class="bubble" role="tooltip">Rating 2.0 aproximado: junta kills, mortes, dano e KAST num número só. 1,00 é o desempenho médio. O HLTV 3.0 de hoje usa probabilidade de vitória do round e não é replicável, então isto é uma aproximação da fórmula 2.0.</span></span></th></tr>
+        <tr>
+      <td class="name">Mirage</td>
+      <td class="muted">16/09 23:47</td>
+      <td class="num"><b class="loss">2:13</b></td>
+      <td class="num">3-13</td>
+      <td class="num">15</td>
+      <td class="num bad">0.29</td>
+    </tr><tr>
+      <td class="name">Mirage</td>
+      <td class="muted">16/09 22:57</td>
+      <td class="num"><b class="win">11:13</b></td>
+      <td class="num">7-17</td>
+      <td class="num">24</td>
+      <td class="num bad">0.45</td>
+    </tr><tr>
+      <td class="name">Mirage</td>
+      <td class="muted">16/09 18:54</td>
+      <td class="num"><b class="loss">13:7</b></td>
+      <td class="num">9-19</td>
+      <td class="num">20</td>
+      <td class="num bad">0.57</td>
+    </tr><tr>
+      <td class="name">Dust2</td>
+      <td class="muted">16/09 18:23</td>
+      <td class="num"><b class="win">13:4</b></td>
+      <td class="num">14-10</td>
+      <td class="num">17</td>
+      <td class="num good">1.39</td>
+    </tr><tr>
+      <td class="name">Mirage</td>
+      <td class="muted">16/09 17:54</td>
+      <td class="num"><b class="loss">13:2</b></td>
+      <td class="num">8-14</td>
+      <td class="num">15</td>
+      <td class="num bad">0.66</td>
+    </tr><tr>
+      <td class="name">Dust2</td>
+      <td class="muted">16/09 17:27</td>
+      <td class="num"><b class="loss">2:13</b></td>
+      <td class="num">7-15</td>
+      <td class="num">15</td>
+      <td class="num bad">0.63</td>
+    </tr><tr>
+      <td class="name">Nuke</td>
+      <td class="muted">15/09 22:38</td>
+      <td class="num"><b class="loss">13:10</b></td>
+      <td class="num">14-15</td>
+      <td class="num">23</td>
+      <td class="num bad">0.85</td>
+    </tr><tr>
+      <td class="name">Mirage</td>
+      <td class="muted">15/09 20:09</td>
+      <td class="num"><b class="loss">14:16</b></td>
+      <td class="num">16-24</td>
+      <td class="num">30</td>
+      <td class="num bad">0.76</td>
+    </tr><tr>
+      <td class="name">Dust2</td>
+      <td class="muted">15/09 19:24</td>
+      <td class="num"><b class="win">11:13</b></td>
+      <td class="num">16-19</td>
+      <td class="num">24</td>
+      <td class="num good">1.04</td>
+    </tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    Fotografia estática gerada em 19/09 20:02 pelo Mira, a partir das demos oficiais das partidas.
+    K, A, D, HS% e placar conferidos contra o histórico oficial da Steam: 90 de 90 jogadores batem.
+    As métricas de mira saem da leitura tick a tick da demo; o percentil compara com os 45 adversários
+    que apareceram nessas partidas.
+  </footer>
+</div>
+
