@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mira · Leitura das partidas</title>
+<meta name="description" content="Leitura das últimas partidas de CS2 do grupo: o que os números dizem e o que dá para melhorar.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23161616'/><path d='M8 2v4M8 10v4M2 8h4M10 8h4' stroke='%23ff832b' stroke-width='1.5'/></svg>">
+<style>
+/* Tokens: IBM Design Language (Carbon), tema G100, com Inter no lugar do IBM Plex.
+   Mesmos valores de packages/ui/tokens.css — esta página é um espelho estático do Mira. */
+:root {
+  --gray-10:#f4f4f4; --gray-30:#c6c6c6; --gray-50:#8d8d8d; --gray-60:#6f6f6f;
+  --gray-70:#525252; --gray-80:#393939; --gray-90:#262626; --gray-100:#161616;
+  --blue-40:#78a9ff; --cyan-40:#33b1ff; --orange-40:#ff832b;
+  --green-40:#42be65; --red-50:#fa4d56; --yellow-30:#f1c21b;
+
+  --bg:var(--gray-100); --layer:var(--gray-90); --layer-2:var(--gray-80);
+  --border:var(--gray-80); --border-2:var(--gray-70); --border-strong:var(--gray-60);
+  --fg:var(--gray-10); --fg-2:var(--gray-30); --fg-help:var(--gray-50);
+  --link:var(--blue-40); --success:var(--green-40); --error:var(--red-50); --warning:var(--yellow-30);
+  --side-t:var(--orange-40); --side-ct:var(--cyan-40);
+  --overlay:rgb(0 0 0 / .6);
+  --fast:110ms; --moderate:150ms; --entrance:240ms;
+  --ease:cubic-bezier(.2,0,.38,.9); --ease-in:cubic-bezier(0,0,.38,.9);
+}
+
+*,*::before,*::after { box-sizing:border-box; }
+html { color-scheme:dark; -webkit-tap-highlight-color:transparent; }
+body {
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:Inter,system-ui,sans-serif; font-size:.875rem; line-height:1.25rem;
+  letter-spacing:.005em; min-height:100dvh;
+}
+.num { font-variant-numeric:tabular-nums slashed-zero; }
+:focus-visible { outline:2px solid #fff; outline-offset:-2px; }
+
+.wrap { max-width:66rem; margin:0 auto; padding:0 16px; }
+
+/* ── cabeçalho ─────────────────────────────────────────────────────── */
+header { border-bottom:1px solid var(--border); background:var(--bg); }
+.brand { display:flex; align-items:center; gap:8px; padding:12px 0; }
+.brand svg { flex:none; }
+.brand b { font-weight:600; letter-spacing:-.005em; }
+.brand span { color:var(--fg-help); font-size:.75rem; }
+.head { padding:24px 0 16px; }
+.head h1 { margin:0; font-size:2rem; line-height:2.5rem; font-weight:400; letter-spacing:-.015em; }
+.head p { margin:8px 0 0; color:var(--fg-2); max-width:56ch; }
+.bar { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding-bottom:16px; }
+
+/* ── abas (content switcher do Carbon) ─────────────────────────────── */
+.tabs { display:flex; }
+.tabs button {
+  appearance:none; border:1px solid var(--border-2); border-right-width:0; background:transparent;
+  color:var(--fg-2); font:inherit; font-size:.875rem; height:40px; padding:0 20px; cursor:pointer;
+  transition:background-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.tabs button:last-child { border-right-width:1px; }
+.tabs button:hover { background:var(--layer-2); color:var(--fg); }
+.tabs button[aria-selected=true] { background:var(--fg); color:var(--gray-100); border-color:var(--fg); font-weight:500; }
+
+.btn {
+  appearance:none; border:0; font:inherit; font-size:.875rem; cursor:pointer;
+  display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px;
+  background:#4589ff; color:#fff;
+  transition:background-color var(--fast) var(--ease);
+}
+.btn:hover { background:var(--link); }
+.btn.ghost { background:var(--layer-2); color:var(--fg); }
+.btn.ghost:hover { background:var(--border-2); }
+.btn.sm { height:32px; padding:0 12px; font-size:.875rem; }
+
+/* ── resumo ────────────────────────────────────────────────────────── */
+.stats { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; margin:0 0 32px; }
+@media (min-width:640px){ .stats { grid-template-columns:repeat(3,1fr); } }
+@media (min-width:1056px){ .stats { grid-template-columns:repeat(6,1fr); } }
+.stat { background:var(--layer); border:1px solid var(--border); padding:16px; }
+.stat .k { display:block; color:var(--fg-2); font-size:.75rem; line-height:1rem; }
+.stat .v { display:block; margin-top:8px; font-size:1.75rem; line-height:2.25rem; font-weight:400; }
+.stat .s { display:block; margin-top:4px; color:var(--fg-help); font-size:.75rem; }
+
+h2 { margin:0 0 16px; font-size:1.25rem; line-height:1.75rem; font-weight:400; letter-spacing:-.005em; }
+.section { margin-bottom:32px; }
+.section-head { display:flex; align-items:baseline; gap:12px; margin-bottom:16px; }
+.section-head h2 { margin:0; }
+.section-head .aside { margin-left:auto; color:var(--fg-2); font-size:.75rem; }
+
+/* ── partidas ──────────────────────────────────────────────────────── */
+.matches { display:grid; gap:8px; }
+.match {
+  background:var(--layer); border:1px solid var(--border); border-left:4px solid var(--border-strong);
+  padding:16px; display:grid; gap:16px;
+}
+.match.win { border-left-color:var(--success); }
+.match.loss { border-left-color:var(--error); }
+.match-top { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 16px; }
+.match-map { font-size:1.25rem; line-height:1.75rem; }
+.match-when { color:var(--fg-help); font-size:.75rem; }
+.score { font-size:1.25rem; line-height:1.75rem; }
+.score .mine { font-weight:500; }
+.score .dim { color:var(--fg-help); }
+.line { display:flex; flex-wrap:wrap; gap:16px 24px; }
+.line .cell { min-width:64px; }
+.line .k { display:block; color:var(--fg-help); font-size:.75rem; line-height:1rem; }
+.line .v { display:block; margin-top:2px; font-size:.875rem; }
+.match-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.who { display:flex; margin-right:4px; }
+.who button {
+  appearance:none; background:transparent; border:1px solid var(--border-2); border-right-width:0;
+  color:var(--fg-help); font:inherit; font-size:.75rem; height:32px; padding:0 12px; cursor:pointer;
+  transition:background-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.who button:last-child { border-right-width:1px; }
+.who button:hover { background:var(--layer-2); color:var(--fg); }
+.who button[aria-pressed=true] { background:var(--layer-2); color:var(--fg); border-color:var(--border-strong); }
+.tag { display:inline-flex; align-items:center; height:20px; padding:0 8px; font-size:.75rem; }
+.tag.win { background:rgb(66 190 101 / .15); color:var(--success); }
+.tag.loss { background:rgb(250 77 86 / .15); color:var(--error); }
+.pos { color:var(--success); } .neg { color:var(--error); } .help { color:var(--fg-help); }
+
+/* ── painel lateral ────────────────────────────────────────────────── */
+#overlay {
+  position:fixed; inset:0; background:var(--overlay); z-index:40;
+  opacity:0; pointer-events:none; transition:opacity var(--moderate) var(--ease-in);
+}
+#overlay[data-open] { opacity:1; pointer-events:auto; }
+#drawer {
+  position:fixed; top:0; right:0; bottom:0; width:100%; max-width:32rem; z-index:50;
+  background:var(--layer); border-left:1px solid var(--border);
+  display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform var(--entrance) var(--ease-in);
+}
+#drawer[data-open] { transform:none; }
+.drawer-head { display:flex; align-items:flex-start; gap:16px; padding:16px; border-bottom:1px solid var(--border); }
+.drawer-head .sub { color:var(--fg-2); font-size:.75rem; line-height:1rem; }
+.drawer-head h2 { margin:2px 0 0; }
+.drawer-head button {
+  appearance:none; background:transparent; border:0; color:var(--fg-2); cursor:pointer;
+  margin:-8px -8px 0 auto; width:40px; height:40px; font-size:1.25rem; line-height:1;
+  display:grid; place-items:center;
+  transition:background-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.drawer-head button:hover { background:var(--layer-2); color:var(--fg); }
+.drawer-body { flex:1; overflow-y:auto; padding:16px; display:grid; gap:24px; align-content:start; }
+.drawer-body .headline { margin:0; font-size:.875rem; line-height:1.25rem; font-weight:600; }
+.blk { display:grid; gap:8px; }
+.blk > .k { color:var(--fg-2); font-size:.75rem; line-height:1rem; }
+.blk p { margin:0; color:var(--fg-2); }
+.point { background:var(--layer); border:1px solid var(--border); border-left:4px solid var(--border-strong); padding:16px; }
+.point.good { border-left-color:var(--success); }
+.point.leak { border-left-color:var(--error); }
+.point h3 { margin:0; font-size:.875rem; line-height:1.125rem; font-weight:600; display:flex; gap:8px; }
+.point h3 .n { color:var(--fg-help); font-weight:400; }
+.point p { margin:8px 0 0; color:var(--fg-2); }
+.point ul { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:8px; }
+.point li { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; }
+.point li .k { color:var(--fg-2); }
+.point li .r { margin-left:auto; display:flex; align-items:baseline; gap:12px; }
+.point li .v { font-weight:500; }
+.point li .b { color:var(--fg-help); font-size:.75rem; }
+.next { background:var(--layer-2); border:1px solid var(--border); border-left:4px solid var(--border-strong); padding:16px; }
+.next p { margin:0; }
+.note { color:var(--fg-help); font-size:.75rem; line-height:1rem; }
+
+footer { border-top:1px solid var(--border); margin-top:48px; padding:24px 0 48px; color:var(--fg-help); font-size:.75rem; }
+footer p { margin:0 0 8px; max-width:70ch; }
+
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 1v5M8 10v5M1 8h5M10 8h5" stroke="#ff832b" stroke-width="1.5"/>
+      </svg>
+      <b>Mira</b>
+      <span>leitura das partidas</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="head">
+    <h1>Últimas partidas</h1>
+    <p id="intro"></p>
+  </div>
+
+  <div class="bar">
+    <div class="tabs" role="tablist" aria-label="Jogador">
+      <button role="tab" id="tab-LM" aria-selected="true" data-player="LM">LM</button>
+      <button role="tab" id="tab-RM" aria-selected="false" data-player="RM">RM</button>
+    </div>
+    <button class="btn" id="insight">Insight</button>
+  </div>
+
+  <div class="stats" id="resumo"></div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>Partidas</h2>
+      <span class="aside" id="contagem"></span>
+    </div>
+    <div class="matches" id="partidas"></div>
+  </div>
+</main>
+
+<footer class="wrap">
+  <p>
+    Os números saem das demos oficiais do matchmaking, parseadas pelo Mira. Os textos são escritos à
+    mão a partir deles — nada aqui é gerado automaticamente, e por isso só existe para estas partidas.
+  </p>
+  <p>
+    Cada comparação com &ldquo;sua média&rdquo; usa as outras partidas daquele jogador no banco,
+    nunca a própria partida que está sendo lida.
+  </p>
+</footer>
+
+<div id="overlay"></div>
+<aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1" aria-hidden="true">
+  <div class="drawer-head">
+    <div>
+      <div class="sub" id="drawer-sub"></div>
+      <h2 id="drawer-title"></h2>
+    </div>
+    <button type="button" id="drawer-close" aria-label="Fechar">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<script>
+const DATA = {"players":{"LM":{"intro":"Cinco partidas de Premier na noite de 20 de setembro, da Mirage às 17:46 ao Dust2 das 21:05. O botão Insight abre a leitura do período inteiro; cada partida tem a sua.","insightSubtitle":"LM · 5 partidas · 103 rounds · 20 de setembro","summary":[{"k":"Partidas","v":"5","s":"2 vitórias · 3 derrotas"},{"k":"Rating 2.0","v":"0,63","s":"de 0,03 a 1,19"},{"k":"ADR","v":"59,4","s":"103 rounds"},{"k":"KAST","v":"55,3%","s":"média na carreira 61,5%"},{"k":"K / D","v":"0,61","s":"52 kills · 85 mortes"},{"k":"Premier","v":"4.430","s":"−231 no período","tone":"neg"}],"insight":{"kind":"insight","playerName":"LM","headline":"Em cinco partidas a sua precisão quase não mudou e o seu rating foi de 0,03 a 1,19. O que muda é quantos duelos você alcança.","context":"Cinco partidas, 103 rounds, duas vitórias e três derrotas, com o Premier indo de 4.661 a 4.430. O nível do adversário variou muito no período — 3.234 na pior noite deles, 7.219 na última —, e por isso as suas duas piores partidas têm explicações opostas: numa você enfrentou gente 2.600 pontos acima, na outra você era o maior rating em quadra.","good":{"title":"A mecânica já está pronta","body":"A precisão com inimigo visível ficou entre 20,6% e 33,3% nas cinco partidas, com a colocação de mira entre 2,1° e 4,7°. Em nenhuma delas a mira explica o resultado: na partida de 1 kill ela foi a segunda melhor dos dez em quadra. O que separa a vitória de 16-14 da derrota de 2-13 é o número de duelos que você alcançou — 62 contra 16.","stats":[{"label":"Rating por partida","value":"0,03 a 1,19","tone":"default"},{"label":"Precisão por partida","value":"20,6% a 33,3%","tone":"default"},{"label":"Duelos por partida","value":"16 a 62","tone":"error"}]},"leaks":[{"title":"Chegar vivo aos duelos","body":"A relação é quase linear nas cinco partidas: mais duelos, mais rating, mais Premier. Você morre em 79% dos rounds da carreira e sobrevive em 20,7%. Foram doze mortes de abertura no período, oito delas nas duas partidas contra adversários de 7.000 — quase sempre no mesmo tipo de lugar: corredor aberto, a mais de 900 unidades, contra alguém que já estava olhando o ângulo.","stats":[{"label":"Duelos na melhor partida","value":"62","tone":"success"},{"label":"Duelos na pior","value":"16","tone":"error"},{"label":"Sobrevivência","value":"20,7%","tone":"error"}]},{"title":"O lado T é metade da sua partida","body":"Na carreira o seu ADR de CT é 72,0 contra 56,2 no T, e nas cinco partidas a diferença apareceu em todas menos uma. Somando o período, foram vinte rounds de T em que você morreu sem tirar vida de ninguém. Não é mira: é chegar ao site junto com o time em vez de atravessar sozinho.","stats":[{"label":"ADR de CT","value":"72,0","tone":"success"},{"label":"ADR de T","value":"56,2","tone":"error"},{"label":"Rounds de T sem dano","value":"20 em 103","tone":"error"}]},{"title":"Vinte e dois rounds caros e vazios","body":"Em 103 rounds, 22 vezes você morreu com 2.500 ou mais de equipamento sem causar um ponto de dano. Pior na Mirage de 6-13 (6 em 19) e na vitória de 16-14 (7 em 30). Cada um desses é uma arma entregue ao outro time no round seguinte.","stats":[{"label":"Rounds caros e vazios","value":"22 em 103","tone":"error"}]},{"title":"A utilitária cega mais o time que o adversário","body":"São 94 aliados cegados em 21 partidas, e numa única partida do período foram 14 — quase um por round. É o item mais barato da lista: não depende de mira nem de posicionamento, só de esperar o aliado passar.","stats":[{"label":"Aliados cegados","value":"94 em 21 partidas","tone":"error"}]}],"team":"Em todas as cinco partidas, entre 85% e 100% das mortes de TODO o time não foram tradadas — a sua, a de quem jogou com você, a de todo mundo. Isso não se resolve individualmente: é distância entre vocês na hora do contato, e é provavelmente o maior vazamento coletivo do grupo.","next":"Uma coisa só: não ser o primeiro corpo em corredor aberto. Nas duas partidas contra adversários de 7.000, isso sozinho respondeu por oito mortes de abertura — e é onde a sua mira, que está boa, simplesmente não chega a ser usada."}},"RM":{"intro":"Das cinco partidas da noite de 20 de setembro, RM jogou duas. O botão Insight abre a leitura das doze partidas dele no banco; cada partida tem a sua.","insightSubtitle":"RM · 2 das 5 partidas · 45 rounds · 20 de setembro","summary":[{"k":"Partidas","v":"2","s":"de 5 no período · 1V 1D"},{"k":"Rating 2.0","v":"0,54","s":"0,36 e 0,71"},{"k":"ADR","v":"49,0","s":"45 rounds"},{"k":"KAST","v":"58,4%","s":"média nas outras 61,4%"},{"k":"K / D","v":"0,46","s":"17 kills · 37 mortes"},{"k":"Premier","v":"9.439","s":"−2.634 desde o pico","tone":"neg"}],"insight":{"kind":"insight","playerName":"RM","headline":"Você chega tarde ao round e sobra por último com ele já perdido. O rating vem caindo junto.","context":"Das cinco partidas do período você jogou duas — 45 rounds, uma vitória e uma derrota. No banco são doze partidas, e nelas o Premier saiu de 12.073 no pico para os 9.439 de agora: uma queda de 2.634 pontos, com ganho em apenas quatro das onze partidas com rating registrado.","good":{"title":"Movimento e apoio estão lá","body":"O controle de movimento está no melhor momento das suas doze partidas: 85% dos tiros com o pé no chão, dez pontos acima da sua média, nas duas partidas. Na vitória você fez o maior dano de utilitária do time, deu dez assistências e teve cinco mortes tradadas, o melhor número de quem jogou com você — quando morre, morre perto de quem pode vingar. E o único clutch que o time ganhou na derrota de 2-13 foi seu.","stats":[{"label":"Counter-strafe","value":"85%","base":"75%","tone":"success"},{"label":"Mortes tradadas (vitória)","value":"5 de 23","base":"1,3 por partida","tone":"success"},{"label":"Dano de utilitária (vitória)","value":"142","base":"28,5 por partida","tone":"success"}]},"leaks":[{"title":"Ficar por último não é talento para clutch","body":"Sete situações de 1vX em trinta rounds numa partida só, quase o dobro do segundo colocado do time. Você converteu duas, o que é uma taxa boa — o problema é a frequência. Com apenas sete sobrevivências nesses trinta rounds, você não está vivo por jogar de trás: está chegando ao contato depois que o round já foi decidido.","stats":[{"label":"Situações de 1vX","value":"7 em 30 rounds","base":"2,9 por partida","tone":"error"},{"label":"Rounds sobrevividos","value":"7 em 30","tone":"error"}]},{"title":"A mira parou de subir para a cabeça","body":"Nas duas partidas do período, a sua taxa de acerto na cabeça ficou em 4,9% e 7,1% contra os 12% que são a sua média. A precisão geral continua no padrão: você acerta o inimigo, mas acerta no corpo. Nessa faixa de Premier é exatamente a diferença entre matar e só trocar dano.","stats":[{"label":"Precisão de headshot","value":"4,9% e 7,1%","base":"12,0%","tone":"error"},{"label":"Precisão (inimigo visível)","value":"27,0% e 21,8%","base":"26,9%","tone":"default"}]},{"title":"A utilitária vai e volta","body":"142 de dano de granada numa partida e zero na seguinte, com dois inimigos cegados em quinze rounds. Na partida em que você zerou, o time era T contra um CT em full e não entrou em site nenhum — e a sua média é 28 a 41 de dano por partida, então é ida e volta, não falta de hábito.","stats":[{"label":"Dano de utilitária","value":"142 e 0","base":"28,5 a 41,5","tone":"error"}]},{"title":"A demora é decisão, não movimento","body":"578 ms entre ver o inimigo e causar o primeiro dano na vitória — o mais lento das suas doze partidas, e justamente com o counter-strafe no melhor momento. Quando o movimento está certo e a demora continua, o que sobra é o tempo que você leva para decidir atirar.","stats":[{"label":"Tempo até o dano","value":"578 ms","base":"477 ms","tone":"error"}]}],"team":"Nas duas partidas o time inteiro morreu sem trade — de 18 a 23 de cada 22 mortes na vitória, e praticamente 100% na derrota. O seu \"chegar tarde\" acontece dentro de um time que também não se cobre; os dois problemas se alimentam.","next":"Chegar ao contato junto com o time, não atrás. Numa partida só, foram sete rounds que o time gastou sem você — e depois você teve que resolver sozinho."}}},"matches":[{"id":"25","map":"Dust2","when":"20/09 · 21:05","rounds":15,"score":[2,13],"lines":{"LM":{"result":"loss","kda":"1 / 15 / 4","adr":"38,7","kast":"40%","rating":"0,03","duels":"16","premier":{"after":"4.430","delta":-194}},"RM":{"result":"loss","kda":"5 / 14 / 3","adr":"47,1","kast":"46,7%","rating":"0,36","duels":"29","premier":{"after":"9.439","delta":-357}}}},{"id":"24","map":"Mirage","when":"20/09 · 20:12","rounds":30,"score":[16,14],"lines":{"LM":{"result":"win","kda":"19 / 24 / 2","adr":"67,7","kast":"60%","rating":"0,84","duels":"62","premier":{"after":"4.624","delta":206}},"RM":{"result":"win","kda":"12 / 23 / 10","adr":"50,8","kast":"70%","rating":"0,71","duels":"38","premier":{"after":"9.796","delta":361}}}},{"id":"23","map":"Dust2","when":"20/09 · 19:05","rounds":22,"score":[13,9],"lines":{"LM":{"result":"win","kda":"18 / 17 / 7","adr":"84,5","kast":"72,7%","rating":"1,19","duels":"41","premier":{"after":"4.418","delta":184}}}},{"id":"22","map":"Mirage","when":"20/09 · 18:19","rounds":19,"score":[6,13],"lines":{"LM":{"result":"loss","kda":"10 / 16 / 5","adr":"63,9","kast":"68,4%","rating":"0,80","duels":"33","premier":{"after":"4.234","delta":-217}}}},{"id":"21","map":"Mirage","when":"20/09 · 17:46","rounds":17,"score":[4,13],"lines":{"LM":{"result":"loss","kda":"4 / 13 / 3","adr":"42,3","kast":"35,3%","rating":"0,27","duels":"22","premier":{"after":"4.451","delta":-210}}}}],"reviews":[{"matchId":"21","playerName":"LM","headline":"Onze dos dezessete rounds em branco: o seu pior número do período.","context":"Você era o maior Premier da partida — 4.661, contra 4.298 dos adversários e 3.717 dos seus aliados. Não há desculpa de nível aqui, e o placar ainda assim foi 4-13.","good":{"title":"Mecânica no lugar","body":"Colocação de mira e counter-strafe acima da sua média: quando você atirou, atirou parado e com a mira perto do alvo. O problema desta partida aconteceu antes do tiro.","stats":[{"label":"Colocação de mira","value":"2,66°","base":"3,30°","tone":"success"},{"label":"Counter-strafe","value":"78,4%","base":"72,6%","tone":"success"}]},"leaks":[{"title":"Onze rounds em branco de dezessete","body":"65% dos rounds sem kill, sem assistência, morrendo e sem ninguém vingar — contra os seus 38,5% habituais. Você teve 22 duelos numa partida de 17 rounds; a sua média é 36 por partida.","stats":[{"label":"Rounds em branco","value":"65%","base":"38,5%","tone":"error"},{"label":"Duelos","value":"22","base":"37","tone":"error"}]},{"title":"O CT, que é o seu lado forte, rendeu 34,8 de ADR","body":"Doze rounds de CT com menos da metade do seu ADR habitual nesse lado, e só cinco deles com alguma participação. Três mortes no BombsiteB e duas no Apartments: a defesa do B foi onde a partida escorreu.","stats":[{"label":"ADR de CT","value":"34,8","base":"72,0","tone":"error"}]},{"title":"Meio segundo para reagir","body":"500 ms entre ver o inimigo e causar o primeiro dano, contra 414 de média. Com a mira já no lugar, a demora é decisão: você viu e pensou antes de atirar.","stats":[{"label":"Tempo até o dano","value":"500 ms","base":"414 ms","tone":"error"}]}],"team":"Todo o time morreu sem trade (de 11 a 13 de cada 13 a 15 mortes), e o placar foi 4-13.","next":"Na Mirage de CT, o B: três das suas mortes em doze rounds aconteceram lá dentro."},{"matchId":"22","playerName":"LM","headline":"Seus números pessoais ficaram acima da média — e ainda assim 6-13.","context":"Adversários com 3.234 de Premier, o mais fraco das cinco e 1.200 abaixo de você; seus aliados, 2.992. Aqui o nível do adversário não explica nada: essa partida era para ser ganha.","good":{"title":"KAST e o lado CT","body":"Presença em 68,4% dos rounds, acima da sua média, e três mortes tradadas — o seu melhor número de trade das cinco partidas. Os sete rounds de CT renderam 86,1 de ADR e cinco vitórias.","stats":[{"label":"KAST","value":"68,4%","base":"61,0%","tone":"success"},{"label":"ADR de CT","value":"86,1","base":"72,0","tone":"success"},{"label":"Mortes tradadas","value":"3 de 16","base":"1 de 14","tone":"success"}]},"leaks":[{"title":"Seis rounds caros e vazios em dezenove","body":"O pior número das cinco partidas: seis vezes você morreu com 2.500 ou mais de equipamento sem causar um ponto de dano, cinco delas no T. Quase um terço da partida virou arma de graça para o outro lado, contra um adversário mais fraco.","stats":[{"label":"Rounds caros e vazios","value":"6 de 19","base":"2,7 por partida","tone":"error"}]},{"title":"Doze rounds de T, um ganho","body":"51,0 de ADR no T contra 86,1 no CT. Cinco mortes dentro do BombsiteA e duas no PalaceInterior a ~1.400 unidades: ou você morria no site depois de entrar, ou morria tentando o duelo mais longo do mapa."},{"title":"Atirando em movimento","body":"67,8% dos tiros com o pé no chão, contra 73,0% de média — o pior das cinco. Junto com a precisão abaixo da média, é o retrato de uma partida jogada com pressa contra gente pior que você.","stats":[{"label":"Counter-strafe","value":"67,8%","base":"73,0%","tone":"error"},{"label":"Precisão (inimigo visível)","value":"22,7%","base":"25,3%","tone":"error"}]}],"team":"O time inteiro morreu sem trade (entre 13 e 15 de cada 14 a 17 mortes). Ninguém cobria ninguém.","next":"Na Mirage de T: entrar no A atrás do smoke, ou não estar no Palace."},{"matchId":"23","playerName":"LM","headline":"A sua melhor partida das cinco — e a sua pior mira das cinco.","context":"Adversários com 4.043 de Premier contra os seus 4.234: a única das cinco realmente nivelada. Vitória por 13-9 e +184 de rating. Guarde a coincidência: a partida em que você foi melhor é a partida em que o adversário estava no seu nível.","good":{"title":"Impacto, não mecânica","body":"Rating 1,19, o seu melhor do período, com 84,5 de ADR, cinco rounds de 2K, um de 3K e o único clutch ganho das cinco. De CT foram 98,9 de ADR e 7 dos 10 rounds. Tudo isso com a colocação de mira e o tempo de reação PIORES que a sua média — ou seja, você ganhou por posição e decisão, não por mira. Contra gente do seu nível isso basta; nas partidas 24 e 25, contra 7.000, não bastou.","stats":[{"label":"ADR","value":"84,5","base":"60,8","tone":"success"},{"label":"Rating 2.0","value":"1,19","base":"0,76","tone":"success"},{"label":"Colocação de mira","value":"4,72°","base":"3,20°","tone":"error"},{"label":"Tempo até o dano","value":"531 ms","base":"410 ms","tone":"error"}]},"leaks":[{"title":"14 aliados cegados contra 5 inimigos","body":"Empata o seu recorde de team flashes, e aqui em apenas 22 rounds. Quase um aliado cego por round, com 15 de dano de utilitária na partida inteira. É o item mais barato de corrigir do seu jogo: não exige mira nenhuma.","stats":[{"label":"Aliados cegados","value":"14","base":"4,5 por partida","tone":"error"},{"label":"Inimigos cegados","value":"5","base":"5,6 por partida","tone":"default"}]},{"title":"As duas aberturas perdidas foram no LowerTunnel","body":"As duas a ~300 unidades, ou seja, duelo de perto ao entrar no tunnel. É o mesmo padrão do Dust2 na partida 25, só que aqui você tinha nível para pagar o preço."},{"title":"O tempo de reação foi o pior do período","body":"531 ms entre ver o inimigo e acertar o primeiro dano, contra 410 de média. Com a mira já no lugar (você teve 27,5% de precisão), meio segundo de hesitação é o que separa essa partida de uma muito melhor."}],"next":"Repetir o jogo de CT e segurar a flash: 14 team flashes é meio round do seu time cego por sua conta."},{"matchId":"24","playerName":"LM","headline":"Vitória contra gente 2.500 acima de você. O lado T ainda é metade da sua partida.","context":"Adversários com 6.920 de Premier contra os seus 4.418, e mesmo assim 16-14 em trinta rounds: +206 de rating, a sua maior subida das cinco. É a partida que mostra o seu teto quando você chega nos duelos.","good":{"title":"Volume e abertura","body":"62 duelos, quase o dobro da sua média — e o único saldo de abertura equilibrado das cinco (4 ganhas, 4 perdidas). A precisão de headshot foi a sua melhor no período. De CT você levou 10 dos 15 rounds com 85,3 de ADR.","stats":[{"label":"Duelos","value":"62","base":"35","tone":"success"},{"label":"Precisão de headshot","value":"15,1%","base":"10,7%","tone":"success"},{"label":"Abertura","value":"4-4","base":"34% de vitória","tone":"success"},{"label":"ADR de CT","value":"85,3","base":"72,0","tone":"success"}]},"leaks":[{"title":"Sete rounds de T sem causar um ponto de dano","body":"Quinze rounds de T renderam 50,2 de ADR contra 85,3 no CT, com sete rounds em que você morreu sem tirar vida de ninguém e três mortes de abertura. Metade da partida praticamente não aconteceu.","stats":[{"label":"ADR no T","value":"50,2","base":"56,2","tone":"error"},{"label":"Rounds de T sem dano","value":"7 de 15","tone":"error"}]},{"title":"A precisão caiu quando o volume subiu","body":"389 tiros, o seu recorde no período, com a pior precisão e o pior spray das cinco partidas. Contra adversários melhores você passou a mandar bala em vez de escolher o tiro — e ainda assim ganhou, o que mostra o quanto sobra aqui.","stats":[{"label":"Precisão (inimigo visível)","value":"20,6%","base":"25,5%","tone":"error"},{"label":"Spray","value":"18,9%","base":"23,7%","tone":"error"}]},{"title":"Sete mortes dentro do A, três no meio a 1.500 unidades","body":"As mortes se concentram em dois lugares: dentro do BombsiteA (7) e no TopofMid a ~1.538 unidades (3). Duelo de meio a essa distância, de T, é o duelo que menos te favorece na partida inteira."}],"team":"23 das suas 24 mortes sem trade — e o time todo entre 18 e 23. De novo, é formação.","next":"Na Mirage de T, chegar ao A com o time. Não atravessar o meio sozinho."},{"matchId":"24","playerName":"RM","headline":"Você ficou por último em 7 dos 30 rounds. Isso não é talento para clutch: é chegar depois.","context":"Premier 9.435, o maior do seu time, contra adversários de 6.920 — e uma vitória de 16-14 que rendeu +361. É a sua melhor partida em nove. Ainda assim foram 23 mortes em 30 rounds, e o seu rating vem de 12.073 (o seu pico no banco) até os 9.796 com que você terminou aqui.","good":{"title":"O jogo de apoio funcionou","body":"Presença em 70% dos rounds, acima da sua média, com 10 assistências e o maior dano de utilitária do time — cinco vezes a sua própria média. E cinco mortes tradadas, o melhor número do time: quando você morreu, morreu perto de quem podia vingar. O seu controle de movimento também está no melhor momento.","stats":[{"label":"KAST","value":"70%","base":"59,3%","tone":"success"},{"label":"Mortes tradadas","value":"5 de 23","base":"1,3 por partida","tone":"success"},{"label":"Dano de utilitária","value":"142","base":"28,5 por partida","tone":"success"},{"label":"Counter-strafe","value":"85,3%","base":"75,2%","tone":"success"}]},"leaks":[{"title":"Sete situações de 1vX em trinta rounds","body":"Quase o dobro do segundo colocado do time (4), e você converteu duas — taxa boa. O problema não é o clutch, é a frequência: sete vezes os seus quatro aliados morreram antes de você. Com 7 sobrevivências em 30 rounds, você não está vivo por jogar de trás; está chegando ao contato atrasado, e cada 1vX é um round que já estava perdido quando chegou até você.","stats":[{"label":"Situações de 1vX","value":"7 em 30 rounds","base":"2,9 por partida","tone":"error"}]},{"title":"A mira de cabeça sumiu","body":"Menos da metade da sua taxa de acerto na cabeça, e 25% das suas kills de headshot contra 47% do LM na mesma partida. Você acertou o inimigo — a precisão geral ficou no seu padrão —, mas acertou no corpo, e no Premier desse nível é a diferença entre matar e trocar dano.","stats":[{"label":"Precisão de headshot","value":"4,9%","base":"12,0%","tone":"error"},{"label":"Precisão (inimigo visível)","value":"27,0%","base":"26,6%","tone":"default"}]},{"title":"Meio segundo para machucar quem você já viu","body":"578 ms entre o inimigo aparecer e o seu primeiro dano nele — o mais lento das suas doze partidas, com o counter-strafe no melhor momento. Quando o movimento está certo e a demora continua, o que sobra é decisão. Suas mortes ficaram concentradas dentro dos sites (9 no A, 5 no B).","stats":[{"label":"Tempo até o dano","value":"578 ms","base":"477 ms","tone":"error"}]}],"team":"O time inteiro morreu sem trade em 18 a 23 de cada ~22 mortes. Ninguém estava perto de ninguém.","next":"Chegar ao contato junto com o time, não atrás: sete rounds o time gastou sem você."},{"matchId":"25","playerName":"LM","headline":"Sua mira foi a segunda melhor dos dez. O problema foi ter tido só 16 duelos.","context":"Premier 4.624 contra adversários de 7.219 em média — o maior desnível das suas últimas cinco partidas, e você era o menor rating dos dez. Do round 3 ao 12 seu time jogou de semi-buy (15–20k) contra um CT em full (29–35k): depois do 0-5 a economia virou o adversário.","good":{"title":"Não foi a mira","body":"Os três números de mecânica ficaram acima da sua média, e a sua precisão com inimigo visível foi a 2ª melhor da partida inteira — acima dos quatro adversários que terminaram com 12 a 18 kills. O que despencou foi o volume: 16 duelos contra os ~37 que você costuma ter por partida, e 111 tiros contra os seus ~11 por round. Você não perdeu os duelos; você não chegou neles.","stats":[{"label":"Precisão (inimigo visível)","value":"33,3%","base":"25,0%","tone":"success"},{"label":"Colocação de mira","value":"2,14°","base":"3,31°","tone":"success"},{"label":"Tempo até o dano","value":"281 ms","base":"420 ms","tone":"success"},{"label":"Duelos","value":"16","base":"37","tone":"error"}]},"leaks":[{"title":"Primeiro a morrer em 5 dos 15 rounds","body":"Líder do time em mortes de abertura (o segundo teve 2) e o único T sem nenhuma abertura ganha. Os rounds 4 e 6 são a mesma morte repetida: subiu o Tunnel e tomou do CT parado no B, a ~1.300 unidades. Os rounds 1 e 7 são a mesma coisa no Long. Treze das quinze mortes foram em corredor aberto (Long, Mid, Tunnel) e dez foram de headshot.","stats":[{"label":"Rounds abrindo o duelo e morrendo","value":"33%","base":"12,5%","tone":"error"}]},{"title":"Quatro rounds caros e vazios","body":"Rounds 5, 6, 7 e 12: comprou entre 3.100 e 3.550 e terminou com zero de dano. São 27% da partida, num time que já estava em semi-buy permanente — cada um desses é uma arma entregue ao CT."},{"title":"Cegou mais aliado que inimigo","body":"Três aliados cegados contra dois inimigos, nenhuma flash que virou kill e 34 de dano de utilitária na partida toda. Uma partida não prova nada sozinha, mas 94 team flashes em 21 partidas dizem que não é ruído."}],"team":"14 das suas 15 mortes não foram tradadas — parece gravíssimo até olhar o resto do time: todos ficaram entre 93% e 100%. Ninguém estava no alcance de ninguém. Isso é formação do time, não erro individual.","next":"No Dust2 em semi-buy, não seja o primeiro corpo no Long nem no Tunnel. Deixe passar o primeiro olhar e entre em segundo, no trade. Cinco duelos a mais na precisão que você mostrou aqui são ~2 kills por partida sem mudar nada de mecânica."},{"matchId":"25","playerName":"RM","headline":"O maior Premier da partida fez 5 kills em 15 rounds — com a melhor mecânica do seu histórico.","context":"Você tinha 9.796 contra adversários de 7.219: era o maior rating dos dez, com folga. O time perdeu 2-13 e você devolveu 357 pontos. Desde o pico de 12.073 no banco, o saldo é de −2.634.","good":{"title":"A mecânica, e o único clutch do time","body":"Colocação de mira e tempo de reação foram os melhores das suas doze partidas, com o counter-strafe dez pontos acima da sua média. E o seu 1v2 foi o único clutch ganho pelo time inteiro na partida (o time tentou 14 e converteu um: o seu).","stats":[{"label":"Colocação de mira","value":"2,47°","base":"3,99°","tone":"success"},{"label":"Tempo até o dano","value":"375 ms","base":"497 ms","tone":"success"},{"label":"Counter-strafe","value":"85,4%","base":"75,8%","tone":"success"},{"label":"Clutches","value":"1 de 3","base":"time: 1 de 14","tone":"success"}]},"leaks":[{"title":"261 tiros para 5 kills","body":"A mira estava colocada e você atirou tanto quanto de costume, mas a precisão caiu cinco pontos abaixo do seu padrão logo na partida em que você era o mais forte dos dez. É o inverso do que aconteceu na partida anterior: lá você acertou sem matar, aqui você nem acertou.","stats":[{"label":"Precisão (inimigo visível)","value":"21,8%","base":"27,1%","tone":"error"},{"label":"Kills","value":"5 em 15 rounds","base":"10,6 por partida","tone":"error"}]},{"title":"Zero de utilitária em quinze rounds","body":"Nenhum dano de granada e dois inimigos cegados na partida inteira, contra os 41,5 de dano de utilitária por partida que são a sua média — e contra os 142 que você tinha feito na partida anterior. Contra um CT em full, um T sem granada não entra em site nenhum.","stats":[{"label":"Dano de utilitária","value":"0","base":"41,5 por partida","tone":"error"}]},{"title":"As onze mortes de T, nenhuma tradada","body":"Três no LongA e duas no TopofMid, a ~850 unidades em média: duelo aberto, longe do time. Nenhuma delas foi vingada dentro dos cinco segundos."}],"team":"A partida estava perdida na economia desde o round 3 (T em semi-buy, CT em full) e ninguém no time conseguiu trade nenhum. Não é um problema individual seu.","next":"Gastar a utilitária: doze rounds de T sem um ponto de dano de granada."}]};
+
+/* ── utilidades ──────────────────────────────────────────────────── */
+const $ = (s) => document.querySelector(s);
+const el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+};
+const signed = (n) => (n > 0 ? '+' + n : String(n));
+
+let player = 'LM';
+
+/* ── resumo do jogador ───────────────────────────────────────────── */
+function renderResumo() {
+  const p = DATA.players[player];
+  const box = $('#resumo');
+  box.replaceChildren();
+  for (const s of p.summary) {
+    const n = el('div', 'stat');
+    n.append(el('span', 'k', s.k));
+    const v = el('span', 'v num ' + (s.tone || ''), s.v);
+    n.append(v);
+    if (s.s) n.append(el('span', 's', s.s));
+    box.append(n);
+  }
+  $('#intro').textContent = p.intro;
+}
+
+/* ── lista de partidas ───────────────────────────────────────────── */
+function reviewOf(matchId, who) {
+  return DATA.reviews.find((r) => r.matchId === String(matchId) && r.playerName === who) || null;
+}
+
+function renderPartidas() {
+  const box = $('#partidas');
+  box.replaceChildren();
+  const list = DATA.matches.filter((m) => m.lines[player]);
+  $('#contagem').textContent = list.length + (list.length === 1 ? ' partida' : ' partidas') + ' · ' + player;
+
+  for (const m of list) {
+    const line = m.lines[player];
+    const card = el('article', 'match ' + line.result);
+
+    const top = el('div', 'match-top');
+    top.append(el('span', 'match-map', m.map));
+    const sc = el('span', 'score num');
+    sc.append(el('span', 'mine', String(m.score[0])), el('span', 'help', ' : ' + m.score[1]));
+    top.append(sc);
+    top.append(el('span', 'tag ' + line.result, line.result === 'win' ? 'vitória' : 'derrota'));
+    const when = el('span', 'match-when', m.when + ' · ' + m.rounds + ' rounds');
+    when.style.marginLeft = 'auto';
+    top.append(when);
+    card.append(top);
+
+    const stats = el('div', 'line');
+    const cells = [
+      ['K / D / A', line.kda],
+      ['ADR', line.adr],
+      ['KAST', line.kast],
+      ['Rating 2.0', line.rating],
+      ['Duelos', line.duels],
+      ['Premier', null],
+    ];
+    for (const [k, v] of cells) {
+      const c = el('div', 'cell');
+      c.append(el('span', 'k', k));
+      if (v !== null) {
+        c.append(el('span', 'v num', v));
+      } else {
+        const wrap = el('span', 'v num');
+        wrap.append(document.createTextNode(line.premier.after + ' '));
+        wrap.append(el('span', line.premier.delta > 0 ? 'pos' : 'neg', signed(line.premier.delta)));
+        c.append(wrap);
+      }
+      stats.append(c);
+    }
+    card.append(stats);
+
+    // quem tem review nesta partida: com os dois, um toggle escolhe de quem abrir
+    const has = ['LM', 'RM'].filter((w) => reviewOf(m.id, w));
+    if (has.length) {
+      const actions = el('div', 'match-actions');
+      let target = has.includes(player) ? player : has[0];
+
+      if (has.length > 1) {
+        const who = el('div', 'who');
+        for (const w of has) {
+          const b = el('button', null, w);
+          b.type = 'button';
+          b.setAttribute('aria-pressed', String(w === target));
+          b.title = 'Ver o review de ' + w + ' nesta partida';
+          b.addEventListener('click', () => {
+            target = w;
+            for (const other of who.children) other.setAttribute('aria-pressed', String(other.textContent === w));
+          });
+          who.append(b);
+        }
+        actions.append(who);
+      }
+
+      const open = el('button', 'btn ghost sm', has.length > 1 ? 'ver review' : 'ver review de ' + has[0]);
+      open.type = 'button';
+      open.addEventListener('click', () => openDrawer(reviewOf(m.id, target), m.map + ' · ' + m.score.join('–') + ' · ' + m.when));
+      actions.append(open);
+      card.append(actions);
+    }
+
+    box.append(card);
+  }
+}
+
+/* ── painel ──────────────────────────────────────────────────────── */
+function pointNode(point, kind, index) {
+  const n = el('div', 'point ' + kind);
+  const h = el('h3');
+  if (index !== undefined) h.append(el('span', 'n num', index + '.'));
+  h.append(document.createTextNode(point.title));
+  n.append(h);
+  n.append(el('p', null, point.body));
+  if (point.stats && point.stats.length) {
+    const ul = el('ul');
+    for (const s of point.stats) {
+      const li = el('li');
+      li.append(el('span', 'k', s.label));
+      const r = el('span', 'r');
+      r.append(el('span', 'v num ' + (s.tone === 'success' ? 'pos' : s.tone === 'error' ? 'neg' : ''), s.value));
+      if (s.base) r.append(el('span', 'b num', 'média ' + s.base));
+      li.append(r);
+      ul.append(li);
+    }
+    n.append(ul);
+  }
+  return n;
+}
+
+function openDrawer(review, subtitle) {
+  if (!review) return;
+  $('#drawer-sub').textContent = subtitle;
+  $('#drawer-title').textContent = (review.kind === 'insight' ? 'Insight · ' : 'Sugestões · ') + review.playerName;
+
+  const body = $('#drawer-body');
+  body.replaceChildren();
+  body.append(el('p', 'headline', review.headline));
+
+  const ctx = el('div', 'blk');
+  ctx.append(el('span', 'k', 'Contexto'));
+  ctx.append(el('p', null, review.context));
+  body.append(ctx);
+
+  const good = el('div', 'blk');
+  good.append(el('span', 'k', 'O que funcionou'));
+  good.append(pointNode(review.good, 'good'));
+  body.append(good);
+
+  const leaks = el('div', 'blk');
+  leaks.append(el('span', 'k', review.kind === 'insight' ? 'Pontos a melhorar' : 'A melhorar'));
+  review.leaks.forEach((l, i) => leaks.append(pointNode(l, 'leak', i + 1)));
+  body.append(leaks);
+
+  if (review.team) {
+    const t = el('div', 'blk');
+    t.append(el('span', 'k', review.kind === 'insight' ? 'Do time' : 'Do time, não seu'));
+    t.append(el('p', null, review.team));
+    body.append(t);
+  }
+
+  const next = el('div', 'blk');
+  next.append(el('span', 'k', review.kind === 'insight' ? 'Por onde começar' : 'Para a próxima partida'));
+  const n = el('div', 'next');
+  n.append(el('p', null, review.next));
+  next.append(n);
+  body.append(next);
+
+  body.append(el('p', 'note', 'Texto escrito à mão a partir dos dados das demos. Comparações usam as outras partidas do mesmo jogador, nunca esta.'));
+
+  body.scrollTop = 0;
+  $('#overlay').setAttribute('data-open', '');
+  const d = $('#drawer');
+  d.setAttribute('data-open', '');
+  d.removeAttribute('aria-hidden');
+  document.body.style.overflow = 'hidden';
+  d.focus({ preventScroll: true });
+}
+
+function closeDrawer() {
+  $('#overlay').removeAttribute('data-open');
+  const d = $('#drawer');
+  d.removeAttribute('data-open');
+  d.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+/* ── eventos ─────────────────────────────────────────────────────── */
+for (const tab of document.querySelectorAll('[role=tab]')) {
+  tab.addEventListener('click', () => {
+    player = tab.dataset.player;
+    for (const t of document.querySelectorAll('[role=tab]')) t.setAttribute('aria-selected', String(t === tab));
+    closeDrawer(); // o painel aberto é de outro jogador: some junto
+    renderResumo();
+    renderPartidas();
+    location.hash = player;
+  });
+}
+$('#insight').addEventListener('click', () => {
+  const p = DATA.players[player];
+  openDrawer(p.insight, p.insightSubtitle);
+});
+$('#drawer-close').addEventListener('click', closeDrawer);
+$('#overlay').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+
+if (location.hash === '#RM') document.querySelector('#tab-RM').click();
+else { renderResumo(); renderPartidas(); }
+</script>
+</body>
+</html>
