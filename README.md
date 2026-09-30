@@ -6,9 +6,9 @@ das partidas de Premier. Sem servidor: são páginas únicas, hospedadas no GitH
 | Página | O que é |
 |---|---|
 | [Ficha tática](https://luanvelo.github.io/mira-stats/) | Os números de LM: cards, tendências e partidas. Gerada por `scripts/build_snapshot.py` (repositório privado do projeto). |
-| [Leitura das partidas](https://luanvelo.github.io/mira-stats/leitura/) | As cinco partidas de 20/09 com abas de LM e RM, a leitura do período (**Insight**) e o review de cada partida. |
+| [Leitura das partidas](https://luanvelo.github.io/mira-stats/leitura/) | Todas as partidas com review, com abas de LM e RM e o review de cada partida. Gerada por `npm run publish:leitura` (repositório privado do projeto) a cada atualização. |
 
 Sobre a **Leitura das partidas**: os números saem do banco do Mira, mas os textos são escritos à
-mão a partir deles — nada ali é gerado automaticamente, e por isso a página só cobre essas
-partidas. Toda comparação com "a média" usa as outras partidas do mesmo jogador, nunca a partida
+mão a partir deles — nada ali é gerado automaticamente, e por isso a página só cobre as
+partidas que já têm review. Toda comparação com "a média" usa as outras partidas do mesmo jogador, nunca a partida
 que está sendo lida.
